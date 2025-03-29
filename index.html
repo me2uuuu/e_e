@@ -93,10 +93,13 @@ function resizeCanvas() {
 }
 window.addEventListener('resize', resizeCanvas);
 
+let audioCtx, analyser, source;
+let started = false;
+
 function startVisualizer() {
-    const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-    const analyser = audioCtx.createAnalyser();
-    const source = audioCtx.createMediaElementSource(bgm);
+    audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    analyser = audioCtx.createAnalyser();
+    source = audioCtx.createMediaElementSource(bgm);
     source.connect(analyser);
     analyser.connect(audioCtx.destination);
     analyser.fftSize = 256;
@@ -125,24 +128,20 @@ function startVisualizer() {
     draw();
 }
 
-let started = false;
-
 function init() {
     intro.classList.add('hidden');
     visualizer.classList.remove('hidden');
     log.classList.remove('hidden');
     posterBtn.classList.remove('hidden');
 
-    document.body.addEventListener('click', startAudioVisualizer, { once: true });
-}
-
-function startAudioVisualizer() {
-    if (!started) {
-        bgm.loop = true;
-        bgm.play();
-        startVisualizer();
-        started = true;
-    }
+    document.body.addEventListener('click', () => {
+        if (!started) {
+            bgm.loop = true;
+            bgm.play();
+            startVisualizer();
+            started = true;
+        }
+    }, { once: true });
 }
 
 // 인트로 후 3초 뒤 초기화 실행
