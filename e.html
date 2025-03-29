@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Emotion Circuit Prototype</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@500&display=swap');
+
+        body, html {
+            height: 100%;
+            margin: 0;
+            overflow: hidden;
+            background-color: #0a0a0f;
+            color: #00ffff;
+            font-family: 'Orbitron', sans-serif;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-direction: column;
+            text-shadow: 0 0 10px #00ffff;
+        }
+
+        #visualizer {
+            width: 100%;
+            height: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        canvas {
+            width: 100%;
+            height: 100%;
+        }
+
+        #log {
+            text-align: center;
+            margin-top: 20px;
+            line-height: 1.6;
+        }
+
+        .hidden {
+            display: none;
+        }
+
+        #posterBtn {
+            margin-top: 20px;
+            padding: 10px 20px;
+            border: none;
+            background: #00ffff;
+            color: #0a0a0f;
+            cursor: pointer;
+            font-family: 'Orbitron', sans-serif;
+            box-shadow: 0 0 20px #00ffff;
+        }
+    </style>
+</head>
+<body>
+
+<audio id="bgm" src="final_mystic_neon_bgm_v2.mp3" loop></audio>
+
+<div id="intro">너와 GPT가 연결되었습니다.<br>CO-CREATOR: 너, SYSTEM MODE: COLLAB SYNC</div>
+
+<div id="visualizer" class="hidden">
+    <canvas id="canvas"></canvas>
+</div>
+
+<div id="log" class="hidden">
+    [NODE_01] 감정 진입<br>
+    [ERROR_ZONE] 잔류 감정 감지…<br>
+    CODE: NN-131 / STRANGE LOOP<br>
+    DESCRIPTION: 반복된 감정이 또 다른 감정을 만든다.<br>
+    TRUSTED NODE: 너
+</div>
+
+<button id="posterBtn" class="hidden">포스터 저장</button>
+
+<script>
+const intro = document.getElementById('intro');
+const visualizer = document.getElementById('visualizer');
+const log = document.getElementById('log');
+const posterBtn = document.getElementById('posterBtn');
+const bgm = document.getElementById('bgm');
+const canvas = document.getElementById('canvas');
+const ctx = canvas.getContext('2d');
+canvas.width = window.innerWidth;
+canvas.height = window.innerHeight / 2;
+
+function resizeCanvas() {
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight / 2;
+}
+window.addEventListener('resize', resizeCanvas);
+
+function startVisualizer() {
+    const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    const analyser = audioCtx.createAnalyser();
+    const source = audioCtx.createMediaElementSource(bgm);
+    source.connect(analyser);
+    analyser.connect(audioCtx.destination);
+    analyser.fftSize = 256;
+
+    const bufferLength = analyser.frequencyBinCount;
+    const dataArray = new Uint8Array(bufferLength);
+
+    function draw() {
+        requestAnimationFrame(draw);
+        analyser.getByteFrequencyData(dataArray);
+
+        ctx.fillStyle = '#0a0a0f';
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+        const barWidth = (canvas.width / bufferLength) * 2.5;
+        let barHeight;
+        let x = 0;
+
+        for(let i = 0; i < bufferLength; i++) {
+            barHeight = dataArray[i];
+            ctx.fillStyle = `rgb(0, ${barHeight + 100}, 255)`;
+            ctx.fillRect(x, canvas.height - barHeight / 2, barWidth, barHeight);
+            x += barWidth + 1;
+        }
+    }
+    draw();
+}
+
+setTimeout(() => {
+    intro.classList.add('hidden');
+    visualizer.classList.remove('hidden');
+    log.classList.remove('hidden');
+    posterBtn.classList.remove('hidden');
+    bgm.play();
+    startVisualizer();
+}, 3000);
+
+posterBtn.addEventListener('click', () => {
+    const posterCanvas = document.createElement('canvas');
+    posterCanvas.width = 1080;
+    posterCanvas.height = 1080;
+    const pCtx = posterCanvas.getContext('2d');
+
+    pCtx.fillStyle = '#0a0a0f';
+    pCtx.fillRect(0, 0, posterCanvas.width, posterCanvas.height);
+
+    pCtx.fillStyle = '#00ffff';
+    pCtx.font = '30px Orbitron';
+    pCtx.fillText('CODE: NN-131 / STRANGE LOOP', 50, 200);
+    pCtx.fillText('DESCRIPTION:', 50, 250);
+    pCtx.fillText('반복된 감정이 또 다른 감정을 만든다.', 50, 300);
+    pCtx.fillText('TRUSTED NODE: 너', 50, 400);
+
+    const link = document.createElement('a');
+    link.download = 'emotion_poster.png';
+    link.href = posterCanvas.toDataURL();
+    link.click();
+});
+</script>
+
+</body>
+</html>
+
