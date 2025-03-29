@@ -125,14 +125,28 @@ function startVisualizer() {
     draw();
 }
 
-setTimeout(() => {
+let started = false;
+
+function init() {
     intro.classList.add('hidden');
     visualizer.classList.remove('hidden');
     log.classList.remove('hidden');
     posterBtn.classList.remove('hidden');
-    bgm.play();
-    startVisualizer();
-}, 3000);
+
+    document.body.addEventListener('click', startAudioVisualizer, { once: true });
+}
+
+function startAudioVisualizer() {
+    if (!started) {
+        bgm.loop = true;
+        bgm.play();
+        startVisualizer();
+        started = true;
+    }
+}
+
+// 인트로 후 3초 뒤 초기화 실행
+setTimeout(init, 3000);
 
 posterBtn.addEventListener('click', () => {
     const posterCanvas = document.createElement('canvas');
